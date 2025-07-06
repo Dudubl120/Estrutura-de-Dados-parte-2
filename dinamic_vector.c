@@ -10,14 +10,14 @@ static int initial_cap = 4;
  * Create and return an empty dynamic vector.
  * On any malloc failure, exit(1).
  */
-Dinamic_Vector *dv_create(void) {
-    Dinamic_Vector *dv = (Dinamic_Vector *)malloc(sizeof(Dinamic_Vector));
+struct Dinamic_Vector *dv_create(void) {
+    struct Dinamic_Vector *dv = (struct Dinamic_Vector *)malloc(sizeof(struct Dinamic_Vector));
     if (dv == NULL) {
         exit(1);
     }
     dv->n = 0;
     dv->n_max = initial_cap;
-    dv->v = (LinkedList **)malloc(sizeof(LinkedList *) * dv->n_max);
+    dv->v = (struct LinkedList **)malloc(sizeof(struct LinkedList *) * dv->n_max);
     if (dv->v == NULL) {
         free(dv);
         exit(1);
@@ -29,12 +29,12 @@ Dinamic_Vector *dv_create(void) {
  * Double the capacity of 'dv->v' when dv->n == dv->n_max.
  * On realloc failure or dv==NULL, exit(1).
  */
-static void dv_reallocate(Dinamic_Vector *dv) {
+static void dv_reallocate(struct Dinamic_Vector *dv) {
     if (dv == NULL) {
         exit(1);
     }
     dv->n_max *= 2;
-    LinkedList **new_block = (LinkedList **)realloc(dv->v, sizeof(LinkedList *) * dv->n_max);
+    struct LinkedList **new_block = (struct LinkedList **)realloc(dv->v, sizeof(struct LinkedList *) * dv->n_max);
     if (new_block == NULL) {
         exit(1);
     }
@@ -45,7 +45,7 @@ static void dv_reallocate(Dinamic_Vector *dv) {
  * Insert 'list_ptr' at the end of 'dv'. Resize if needed.
  * If dv==NULL or list_ptr==NULL, exit(1).
  */
-void dv_insert(Dinamic_Vector *dv, LinkedList *list_ptr) {
+void dv_insert(struct Dinamic_Vector *dv, struct LinkedList *list_ptr) {
     if (dv == NULL || list_ptr == NULL) {
         exit(1);
     }
@@ -58,7 +58,7 @@ void dv_insert(Dinamic_Vector *dv, LinkedList *list_ptr) {
 /*
  * Return how many elements are stored in dv. If dv==NULL, return 0.
  */
-int dv_size(const Dinamic_Vector *dv) {
+int dv_size(const struct Dinamic_Vector *dv) {
     if (dv == NULL) {
         return 0;
     }
@@ -69,7 +69,7 @@ int dv_size(const Dinamic_Vector *dv) {
  * Return the LinkedList* stored at index i.
  * If dv==NULL or i out of bounds, exit(1).
  */
-LinkedList *dv_get(const Dinamic_Vector *dv, int i) {
+struct LinkedList *dv_get(const struct Dinamic_Vector *dv, int i) {
     if (dv == NULL || i < 0 || i >= dv->n) {
         exit(1);
     }
@@ -80,7 +80,7 @@ LinkedList *dv_get(const Dinamic_Vector *dv, int i) {
  * Free the dynamic vector itself (array + struct).  
  * Does NOT free the LinkedList* contents. If dv==NULL, do nothing.
  */
-void dv_free(Dinamic_Vector *dv) {
+void dv_free(struct Dinamic_Vector *dv) {
     if (dv == NULL) {
         return;
     }
@@ -169,7 +169,7 @@ static char **split_csv_line(const char *line, int *num_tokens) {
  *
  * Return 0 on success; return 1 on any error (file open or memory failure).
  */
-int dv_read_from_csv(Dinamic_Vector *dv, const char *filename) {
+int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename) {
     if (dv == NULL || filename == NULL) {
         return 1;
     }
@@ -198,11 +198,11 @@ int dv_read_from_csv(Dinamic_Vector *dv, const char *filename) {
         /* num_tokens will always be 5 */
 
         /* Create a linked list for this row */
-        LinkedList *row_list = ll_create();  /* exit(1) on failure */
+        struct LinkedList *row_list = ll_create();  /* exit(1) on failure */
 
         /* For columns 0..4 build a Field and append */
         for (int idx = 0; idx < num_tokens; idx++) {
-            Field f;
+            struct Field f;
             if (tokens[idx][0] == '\0') {
                 /* empty string → treat as NULL field */
                 f.type = FIELD_NULL;
@@ -251,7 +251,7 @@ int dv_read_from_csv(Dinamic_Vector *dv, const char *filename) {
  *   prints "Row i: " then ll_print(that list).  
  * If dv==NULL or empty, prints nothing.
  */
-void dv_print_all(const Dinamic_Vector *dv) {
+void dv_print_all(const struct Dinamic_Vector *dv) {
     if (dv == NULL) {
         return;
     }
@@ -259,19 +259,19 @@ void dv_print_all(const Dinamic_Vector *dv) {
     printf("ID CPF Nome Idade Data_Cadastro\n");
 
     for (int i = 0; i < total; i++) {
-        LinkedList *row = dv_get(dv, i);  /* exit(1) if dv==NULL or out of bounds */
+        struct LinkedList *row = dv_get(dv, i);  /* exit(1) if dv==NULL or out of bounds */
         ll_print(row);
     }
 }
-Field *get_field_by_index(const Dinamic_Vector *dv, int line, int column) {
+struct Field *get_field_by_index(const struct Dinamic_Vector *dv, int line, int column) {
    if (dv == NULL || line < 0 || line >= dv_size(dv)) {
       return NULL;
    }
-   LinkedList *row = dv_get(dv, line);
+   struct LinkedList *row = dv_get(dv, line);
    if (row == NULL || column < 0 || (row != NULL && column >= ll_size(row))) {
       return NULL;
    }
-   ListNode *node = row->first;
+   struct ListNode *node = row->first;
    for (int i = 0; i < column && node != NULL; i++) {
       node = node->next;
    }
@@ -281,7 +281,7 @@ Field *get_field_by_index(const Dinamic_Vector *dv, int line, int column) {
    return NULL;
 }
 
-void dv_consult_by_field(const Dinamic_Vector *dv, const char *search, int field_index) {
+void dv_consult_by_field(const struct Dinamic_Vector *dv, const char *search, int field_index) {
    if (dv == NULL || search == NULL || field_index < 0 || field_index > 4) {
        printf("Erro: Parâmetros inválidos.\n");
        return;
@@ -293,8 +293,8 @@ void dv_consult_by_field(const Dinamic_Vector *dv, const char *search, int field
    int found = 0; // Flag to track if any match is found
 
    for (int i = 0; i < dv_size(dv); i++) {
-       LinkedList *row = dv_get(dv, i);
-       Field *field = get_field_by_index(dv, i, field_index);
+       struct LinkedList *row = dv_get(dv, i);
+       struct Field *field = get_field_by_index(dv, i, field_index);
 
        if (field != NULL && field->type == FIELD_STRING && strncasecmp(field->s, search, search_len) == 0) {
            ll_print(row); // Print the entire row if the field matches
@@ -305,4 +305,33 @@ void dv_consult_by_field(const Dinamic_Vector *dv, const char *search, int field
    if (!found) {
        printf("Nenhum usuário registrado com essas credenciais.\n");
    }
+}
+
+/**
+ * Reassign IDs for all rows in the vector, starting from 1.
+ * Assumes ID is always the first field (index 0).
+ */
+void dv_reassign_ids(struct Dinamic_Vector *dv) {
+    if (!dv) return;
+    for (int i = 0; i < dv->n; i++) {
+        struct LinkedList *row = dv->v[i];
+        if (row && row->first) {
+            row->first->field.type = FIELD_INT;
+            row->first->field.i = i + 1;
+        }
+    }
+}
+
+/**
+ * Remove the row at index 'idx' from the vector, shifting others left.
+ * Frees the LinkedList at that position.
+ */
+void dv_remove(struct Dinamic_Vector *dv, int idx) {
+    if (!dv || idx < 0 || idx >= dv->n) return;
+    ll_free(dv->v[idx]);
+    for (int i = idx; i < dv->n - 1; i++) {
+        dv->v[i] = dv->v[i + 1];
+    }
+    dv->n--;
+    dv_reassign_ids(dv);
 }

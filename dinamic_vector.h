@@ -4,44 +4,44 @@
 #include "linkedlist.h"
 
 /*
- * A dynamic array (vector) whose elements are pointers to LinkedList.
+ * A dynamic array (vector) whose elements are pointers to struct LinkedList.
  * Each LinkedList represents one row of the CSV, with heterogeneous fields.
  */
-typedef struct dinamic_vector {
+struct Dinamic_Vector {
     int n;           /* number of elements currently stored */
     int n_max;       /* current capacity (max elements before realloc) */
-    LinkedList **v;  /* array of pointers to LinkedList */
-} Dinamic_Vector;
+    struct LinkedList **v;  /* array of pointers to LinkedList */
+};
 
 /**
  * Create and return a new, empty dynamic vector.
  * If malloc fails, exits(1).
  */
-Dinamic_Vector *dv_create(void);
+struct Dinamic_Vector *dv_create(void);
 
 /**
  * Insert 'list_ptr' at the end of 'dv'; if dv is full, its capacity doubles.
  * If dv==NULL or list_ptr==NULL or realloc fails, exits(1).
  */
-void dv_insert(Dinamic_Vector *dv, LinkedList *list_ptr);
+void dv_insert(struct Dinamic_Vector *dv, struct LinkedList *list_ptr);
 
 /**
  * Return how many elements are currently stored in 'dv'; if dv==NULL, returns 0.
  */
-int dv_size(const Dinamic_Vector *dv);
+int dv_size(const struct Dinamic_Vector *dv);
 
 /**
- * Return the LinkedList* stored at index 'i'.  
+ * Return the struct LinkedList* stored at index 'i'.  
  * If dv==NULL or i is out of bounds, exits(1).
  */
-LinkedList *dv_get(const Dinamic_Vector *dv, int i);
+struct LinkedList *dv_get(const struct Dinamic_Vector *dv, int i);
 
 /**
  * Free the dynamic vector itself (the array and the struct).  
  * Does NOT free the LinkedList* elements; caller must free each list separately.
  * Safe if dv==NULL.
  */
-void dv_free(Dinamic_Vector *dv);
+void dv_free(struct Dinamic_Vector *dv);
 
 /**
  * Read a CSV file and push each row into 'dv' as a LinkedList of heterogeneous fields.
@@ -66,7 +66,7 @@ void dv_free(Dinamic_Vector *dv);
  *   - File open failure
  *   - Memory allocation failure
  */
-int dv_read_from_csv(Dinamic_Vector *dv, const char *filename);
+int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename);
 
 /**
  * Print every LinkedList stored in 'dv'.  
@@ -74,8 +74,12 @@ int dv_read_from_csv(Dinamic_Vector *dv, const char *filename);
  *   Row i: <non-null fields in that list>
  * If dv==NULL or empty, prints nothing.
  */
-void dv_print_all(const Dinamic_Vector *dv);
+void dv_print_all(const struct Dinamic_Vector *dv);
 
-void dv_consult_by_field(const Dinamic_Vector *dv, const char *query, int field_index);
+void dv_consult_by_field(const struct Dinamic_Vector *dv, const char *query, int field_index);
 
-#endif 
+void dv_reassign_ids(struct Dinamic_Vector *dv);
+
+void dv_remove(struct Dinamic_Vector *dv, int idx);
+
+#endif

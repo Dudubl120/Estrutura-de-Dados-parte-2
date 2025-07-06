@@ -28,7 +28,7 @@ int main() {
     char search[256]; // To store search input in consultation
 
     /* Step 1: Create the dynamic vector */
-    Dinamic_Vector *dv = dv_create();  // exit(1) on failure, but dv_create never returns NULL */
+    struct Dinamic_Vector *dv = dv_create();  // exit(1) on failure, but dv_create never returns NULL */
     if (dv == NULL) {
         return 1;
     }
@@ -50,6 +50,7 @@ int main() {
         printf("\n");
         printf("[Usuario]\n");
         scanf("%s", flag);
+        
         if (strcmp(flag, "1") == 0) {
             printf("\nConsultando pacientes...\n");
             
@@ -77,62 +78,80 @@ int main() {
             }
             
         } else if (strcmp(flag, "2") == 0) {
-            printf("\n[Sistema]\nDigite o ID do paciente para atualizar:\n[Usuario]\n");
+            printf("\n[Sistema]\nDigite o ID do registro a ser atualizado:\n[Usuario]\n");
             int id;
-            scanf("%d", &id);
+            scanf("%d%*c", &id); // %*c consome o \n
+            if (id < 1 || id > dv_size(dv)) {
+                printf("[Sistema]\nID inválido.\n");
+                continue;
+            }
+            struct LinkedList *row = dv_get(dv, id - 1);
+            printf("\n[Sistema]\nDigite o novo valor para os campos CPF (apenas dígitos), Nome, Idade e Data_Cadastro (para manter o valor atual de um campo, digite '-'): \n[Usuario]\n");
+            char cpf[256], nome[256], idade[256], data[256];
+            fgets(cpf, sizeof(cpf), stdin); cpf[strcspn(cpf, "\n")] = 0;
+            fgets(nome, sizeof(nome), stdin); nome[strcspn(nome, "\n")] = 0;
+            fgets(idade, sizeof(idade), stdin); idade[strcspn(idade, "\n")] = 0;
+            fgets(data, sizeof(data), stdin); data[strcspn(data, "\n")] = 0;
 
-            printf("\n[Sistema]\nDigite o índice do campo para atualizar (0: ID, 1: CPF, 2: Nome, 3: Idade, 4: Data_Cadastro):\n[Usuario]\n");
-            int field_index;
-            scanf("%d", &field_index);
+            struct LinkedList *preview = ll_copy(row);
+            ll_update_fields(preview, cpf, nome, idade, data);
 
-            printf("\n[Sistema]\nDigite o novo valor:\n[Usuario]\n");
-            char new_value[256];
-            scanf("%s", new_value);
-
-            Field new_field;
-            if (field_index == 0 || field_index == 3) {
-                new_field.type = FIELD_INT;
-                new_field.i = atoi(new_value);
+            printf("[Sistema]\nConfirma os novos valores para o registro abaixo? (S/N)\n");
+            printf("ID CPF Nome Idade Data_Cadastro\n");
+            ll_print(preview);
+            char confirm[10];
+            fgets(confirm, sizeof(confirm), stdin);
+            if (strcasecmp(confirm, "S\n") == 0 || strcasecmp(confirm, "S") == 0) {
+                ll_update_fields(row, cpf, nome, idade, data);
+                printf("[Sistema]\nRegistro atualizado com sucesso.\n");
             } else {
-                new_field.type = FIELD_STRING;
-                new_field.s = strdup(new_value);
+                printf("[Sistema]\nAtualização cancelada.\n");
             }
+            ll_free(preview);
 
-            LinkedList *row = dv_get(dv, id - 1);
-            ll_update_field(row, field_index, new_field);
-
-        } else if (strcmp(flag, "3") == 0) {
-            printf("\n[Sistema]\nDigite o ID do paciente para remover:\n[Usuario]\n");
+        }else if (strcmp(flag, "3") == 0) {
+            printf("\n[Sistema]\nDigite o ID do registro a ser removido:\n[Usuario]\n");
             int id;
-            scanf("%d", &id);
-
-            LinkedList *row = dv_get(dv, id - 1);
-            ll_free(row);
-            dv_insert(dv, NULL); // Mark as removed
-
-        } else if (strcmp(flag, "4") == 0) {
-            printf("\n[Sistema]\nAdicionando um novo paciente...\n");
-
-            LinkedList *new_row = ll_create();
-            for (int i = 0; i < 5; i++) {
-                printf("\n[Sistema]\nDigite o valor para o campo %d:\n[Usuario]\n", i);
-                char value[256];
-                scanf("%s", value);
-
-                Field new_field;
-                if (i == 0 || i == 3) {
-                    new_field.type = FIELD_INT;
-                    new_field.i = atoi(value);
-                } else {
-                    new_field.type = FIELD_STRING;
-                    new_field.s = strdup(value);
-                }
-
-                ll_append_field(new_row, new_field);
+            scanf("%d%*c", &id);
+            if (id < 1 || id > dv_size(dv)) {
+                printf("[Sistema]\nID inválido.\n");
+                continue;
             }
+            struct LinkedList *row = dv_get(dv, id - 1);
+            printf("[Sistema]\nTem certeza de que deseja excluir o registro abaixo? (S/N)\n");
+            printf("ID CPF Nome Idade Data_Cadastro\n");
+            ll_print(row);
+            char confirm[10];
+            fgets(confirm, sizeof(confirm), stdin);
+            if (strcasecmp(confirm, "S\n") == 0 || strcasecmp(confirm, "S") == 0) {
+                dv_remove(dv, id - 1);
+                printf("[Sistema]\nRegistro removido com sucesso.\n");
+            } else {
+                printf("[Sistema]\nRemoção cancelada.\n");
+            }
+        }
+        else if (strcmp(flag, "4") == 0) {
+            printf("[Sistema]\nPara inserir um novo registro, digite os valores para os campos CPF (apenas dígitos), Nome, Idade e Data_Cadastro:\n[Usuario]\n");
+            char cpf[256], nome[256], idade[256], data[256];
+            fgets(cpf, sizeof(cpf), stdin); cpf[strcspn(cpf, "\n")] = 0;
+            fgets(nome, sizeof(nome), stdin); nome[strcspn(nome, "\n")] = 0;
+            fgets(idade, sizeof(idade), stdin); idade[strcspn(idade, "\n")] = 0;
+            fgets(data, sizeof(data), stdin); data[strcspn(data, "\n")] = 0;
+            int id = dv_size(dv) + 1;
+            struct LinkedList *new_row = ll_create_from_fields(id, cpf, nome, atoi(idade), data);
 
-            dv_insert(dv, new_row);
-        
+            printf("[Sistema]\nConfirma a inserção do registro abaixo? (S/N)\n");
+            printf("ID CPF Nome Idade Data_Cadastro\n");
+            ll_print(new_row);
+            char confirm[10];
+            fgets(confirm, sizeof(confirm), stdin);
+            if (strcasecmp(confirm, "S\n") == 0 || strcasecmp(confirm, "S") == 0) {
+                dv_insert(dv, new_row);
+                printf("[Sistema]\nO registro foi inserido com sucesso.\n");
+            } else {
+                ll_free(new_row);
+                printf("[Sistema]\nInserção cancelada.\n");
+            }
 
         } else if (strcmp(flag, "5") == 0) {
             printf("\nImprimindo todos os pacientes...\n");
@@ -160,7 +179,7 @@ int main() {
     
     /* Step 4: Free each LinkedList inside dv, then free dv itself */
     for (int i = 0; i < dv_size(dv); i++) {
-        LinkedList *row = dv_get(dv, i);  /* exit(1) if invalid */
+        struct LinkedList *row = dv_get(dv, i);  /* exit(1) if invalid */
         ll_free(row);
     }
     dv_free(dv);

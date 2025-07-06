@@ -1,5 +1,12 @@
-# Atividade-Estrutura-de-Dados
+# Atividade-Estrutura-de-Dados parte dois
 
-O enunciado da atividade se mostrou um pouco confuso para dizer se deveria ser usado um vetor estatico ou dinamico, uma vez que ele nominalmente cita o uso de um vetor estatico e logo em seguida diz que um dos pontos cobrados na atividade é a alocação dinamica. Em todo caso, simplesmente optei por usar alocação dinamica já que é a opção mais tecnicamente desafiadora.
+adicionar documentação nas funções novas
 
-Como o array deve ser de um unico tipo de dados eu tive a ideia de fazer o array principal com ponteiros que apontam para listas, cada uma dessas listas sendo uma das linhas do originario csv. Desta forma os arquivos podem ter os seus diferentes tipos e além de serem mais acessiveis.
+corrigir nomes de variaveis e structs indevidos
+
+persistencia dos dados (apos fechar o programa salvar no csv)
+
+4 - adicionar pacientes não está colocando data do cadastro
+
+limpar terminal está saindo do programa
+
