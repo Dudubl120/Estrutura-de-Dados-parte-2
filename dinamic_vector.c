@@ -247,6 +247,64 @@ int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename) {
 }
 
 /**
+ * Write all data from the dynamic vector to a CSV file.
+ * Creates the header line and then writes each record.
+ * 
+ * Returns 0 on success; returns 1 on any error.
+ */
+int dv_write_to_csv(const struct Dinamic_Vector *dv, const char *filename) {
+    if (dv == NULL || filename == NULL) {
+        return 1;
+    }
+
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        return 1;
+    }
+
+    // Write header
+    fprintf(fp, "ID,CPF,Nome,Idade,Data_Cadastro\n");
+
+    // Write each record
+    for (int i = 0; i < dv_size(dv); i++) {
+        struct LinkedList *row = dv_get(dv, i);
+        if (row == NULL) continue;
+
+        struct ListNode *node = row->first;
+        int field_count = 0;
+
+        while (node != NULL && field_count < 5) {
+            if (field_count > 0) {
+                fprintf(fp, ",");
+            }
+
+            if (node->field.type == FIELD_INT) {
+                fprintf(fp, "%d", node->field.i);
+            } else if (node->field.type == FIELD_STRING && node->field.s != NULL) {
+                fprintf(fp, "%s", node->field.s);
+            }
+            // For FIELD_NULL or NULL strings, print nothing (empty field)
+
+            node = node->next;
+            field_count++;
+        }
+
+        // Fill remaining fields if the row has fewer than 5 fields
+        while (field_count < 5) {
+            if (field_count > 0) {
+                fprintf(fp, ",");
+            }
+            field_count++;
+        }
+
+        fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+/**
  * Print every LinkedList in 'dv'. For each i in [0..dv_size(dv)-1]:
  *   prints "Row i: " then ll_print(that list).  
  * If dv==NULL or empty, prints nothing.

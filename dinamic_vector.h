@@ -69,6 +69,16 @@ void dv_free(struct Dinamic_Vector *dv);
 int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename);
 
 /**
+ * Write all data from the dynamic vector to a CSV file.
+ * Creates a backup of the original file before writing.
+ * 
+ * Returns 0 on success; returns 1 on any error:
+ *   - File open failure
+ *   - Write operation failure
+ */
+int dv_write_to_csv(const struct Dinamic_Vector *dv, const char *filename);
+
+/**
  * Print every LinkedList stored in 'dv'.  
  * For each i in [0..dv_size(dv)-1], prints:
  *   Row i: <non-null fields in that list>
@@ -76,10 +86,29 @@ int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename);
  */
 void dv_print_all(const struct Dinamic_Vector *dv);
 
+/**
+ * Consult patients by a specific field value.
+ * Searches through all records and prints matching ones.
+ * 
+ * @param dv The dynamic vector containing patient data
+ * @param query The search query string
+ * @param field_index The index of the field to search in (1=CPF, 2=Name, etc.)
+ */
 void dv_consult_by_field(const struct Dinamic_Vector *dv, const char *query, int field_index);
 
+/**
+ * Reassign sequential IDs to all records in the dynamic vector.
+ * Used after removing records to maintain sequential numbering.
+ */
 void dv_reassign_ids(struct Dinamic_Vector *dv);
 
+/**
+ * Remove a record at the specified index from the dynamic vector.
+ * Automatically reassigns IDs to maintain sequential numbering.
+ * 
+ * @param dv The dynamic vector
+ * @param idx The index of the record to remove
+ */
 void dv_remove(struct Dinamic_Vector *dv, int idx);
 
 #endif
