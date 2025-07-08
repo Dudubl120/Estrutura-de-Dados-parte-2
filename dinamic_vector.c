@@ -93,9 +93,6 @@ void dv_free(struct Dinamic_Vector *dv) {
  * Returns a newly malloc’d array of 5 char* (each strndup’d, possibly empty string).
  * *num_tokens is set to 5.  
  * On any malloc failure, exit(1).  
- *
- * This handles lines such as "7,123,Mario,,2024-07-11" → 
- *   ["7", "123", "Mario", "", "2024-07-11"]
  */
 static char **split_csv_line(const char *line, int *num_tokens) {
     /* We expect 5 columns per line. Allocate array of length 5. */
@@ -153,21 +150,12 @@ static char **split_csv_line(const char *line, int *num_tokens) {
 }
 
 /**
- * Read the CSV file 'filename' and append each row into 'dv'.
- *
- *  - CSV must have a first line header → skip it.  
- *  - Each subsequent non-empty line:  
- *      * split_csv_line(line, &num_tokens) → exactly 5 tokens.  
- *      * Create LinkedList *row_list = ll_create().  
- *      * For each field index 0..4:  
- *          - If token is empty string: Field.type=FIELD_NULL.  
- *          - Else if index==0 or index==3: convert token to int → FIELD_INT.  
- *          - Else (1,2,4): strdup(token) → FIELD_STRING.  
- *        Append that Field to row_list via ll_append_field().  
- *      * dv_insert(dv, row_list).  
- *      * Free the temporary token strings and array.  
- *
- * Return 0 on success; return 1 on any error (file open or memory failure).
+ * Reads a CSV file and appends each data row to the dynamic vector 'dv'.
+ * Skips the header. For each non-empty line, splits into 5 fields:
+ *   - Fields 0 and 3: convert to int (FIELD_INT), or FIELD_NULL if empty.
+ *   - Fields 1, 2, and 4: store as string (FIELD_STRING), or FIELD_NULL if empty.
+ * Each row is stored as a LinkedList and inserted into 'dv'.
+ * Frees all temporary memory. Returns 0 on success, 1 on error.
  */
 int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename) {
     if (dv == NULL || filename == NULL) {
@@ -202,22 +190,22 @@ int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename) {
 
         /* For columns 0..4 build a Field and append */
         for (int idx = 0; idx < num_tokens; idx++) {
-            struct Field f;
+            struct Field field;
             if (tokens[idx][0] == '\0') {
                 /* empty string → treat as NULL field */
-                f.type = FIELD_NULL;
-                f.i = 0;
-                f.s = NULL;
+                field.type = FIELD_NULL;
+                field.i = 0;
+                field.s = NULL;
             } else if (idx == 0 || idx == 3) {
                 /* ID or Age: integer column */
-                f.type = FIELD_INT;
-                f.i = atoi(tokens[idx]);
-                f.s = NULL;
+                field.type = FIELD_INT;
+                field.i = atoi(tokens[idx]);
+                field.s = NULL;
             } else {
                 /* CPF, Name or Date: string column */
-                f.type = FIELD_STRING;
-                f.s = strdup(tokens[idx]);
-                if (f.s == NULL) {
+                field.type = FIELD_STRING;
+                field.s = strdup(tokens[idx]);
+                if (field.s == NULL) {
                     /* on failure, clean up and exit */
                     free(tokens[idx]);
                     for (int j = idx + 1; j < num_tokens; j++) {
@@ -229,7 +217,7 @@ int dv_read_from_csv(struct Dinamic_Vector *dv, const char *filename) {
                     return 1;
                 }
             }
-            ll_append_field(row_list, f);  /* exit(1) on malloc failure */
+            ll_append_field(row_list, field);  /* exit(1) on malloc failure */
         }
 
         /* Insert this row’s list into dv */
@@ -392,4 +380,23 @@ void dv_remove(struct Dinamic_Vector *dv, int idx) {
     }
     dv->n--;
     dv_reassign_ids(dv);
+}
+
+/**
+ * Free all LinkedLists stored in the dynamic vector and then free the vector itself.
+ * This provides complete memory cleanup for the entire data structure.
+ */
+void dv_free_all(struct Dinamic_Vector *dv) {
+    if (dv == NULL) {
+        return;
+    }
+    
+    // Free each LinkedList inside the vector
+    for (int i = 0; i < dv_size(dv); i++) {
+        struct LinkedList *row = dv_get(dv, i);
+        ll_free(row);
+    }
+    
+    // Free the dynamic vector itself
+    dv_free(dv);
 }

@@ -87,28 +87,42 @@ int dv_write_to_csv(const struct Dinamic_Vector *dv, const char *filename);
 void dv_print_all(const struct Dinamic_Vector *dv);
 
 /**
- * Consult patients by a specific field value.
- * Searches through all records and prints matching ones.
- * 
- * @param dv The dynamic vector containing patient data
- * @param query The search query string
- * @param field_index The index of the field to search in (1=CPF, 2=Name, etc.)
+ * Get a specific field from a row and column in the dynamic vector.
+ * Returns pointer to the Field, or NULL if invalid indices.
  */
-void dv_consult_by_field(const struct Dinamic_Vector *dv, const char *query, int field_index);
+struct Field *get_field_by_index(const struct Dinamic_Vector *dv, int line, int column);
 
 /**
- * Reassign sequential IDs to all records in the dynamic vector.
- * Used after removing records to maintain sequential numbering.
+ * Consult patients by a specific field value.
+ * Searches through all records and prints matching ones.
+ * The field to search is specified by its index (e.g., 1=CPF, 2=Name, etc.).
+ */
+void dv_consult_by_field(const struct Dinamic_Vector *dv, const char *search, int field_index);
+
+
+/**
+ * Consult patients by a specific field value.
+ * Searches through all records and prints matching ones.
+ * The field to search is specified by its index (e.g., 1=CPF, 2=Name, etc.).
  */
 void dv_reassign_ids(struct Dinamic_Vector *dv);
 
 /**
+ * Reassign sequential IDs to all records in the dynamic vector.
+ * This is used after removing records to maintain sequential numbering.
+ */
+
+ /**
  * Remove a record at the specified index from the dynamic vector.
- * Automatically reassigns IDs to maintain sequential numbering.
- * 
- * @param dv The dynamic vector
- * @param idx The index of the record to remove
+ * After removal, IDs are automatically reassigned to maintain sequential numbering.
  */
 void dv_remove(struct Dinamic_Vector *dv, int idx);
+
+
+/**
+ * Remove a record at the specified index from the dynamic vector.
+ * After removal, IDs are automatically reassigned to maintain sequential numbering.
+ */
+void dv_free_all(struct Dinamic_Vector *dv);
 
 #endif

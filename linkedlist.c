@@ -16,23 +16,23 @@ struct LinkedList *ll_create(void) {
 }
 
 /*
- * Append a Field 'f' at the end of list 'l'.
- * Takes ownership of f. If l==NULL or malloc fails → exit(1).
+ * Append a Field 'field' at the end of list 'l'.
+ * Takes ownership of field. If l==NULL or malloc fails → exit(1).
  */
-void ll_append_field(struct LinkedList *l, struct Field f) {
+void ll_append_field(struct LinkedList *l, struct Field field) {
     if (l == NULL) {
         exit(1);
     }
 
     struct ListNode *node = (struct ListNode *)malloc(sizeof(struct ListNode));
     if (node == NULL) {
-        if (f.type == FIELD_STRING) {
-            free(f.s);
+        if (field.type == FIELD_STRING) {
+            free(field.s);
         }
         exit(1);
     }
 
-    node->field = f;
+    node->field = field;
     node->next = NULL;
     node->prev = l->last;
 
@@ -179,17 +179,17 @@ int ll_add_node(struct LinkedList *l, int position, struct Field new_field) {
  */
 struct LinkedList *ll_create_from_fields(int id, const char *cpf, const char *nome, int idade, const char *data) {
     struct LinkedList *l = ll_create();
-    struct Field f;
-    f.type = FIELD_INT; f.i = id; f.s = NULL;
-    ll_append_field(l, f);
-    f.type = FIELD_STRING; f.s = strdup(cpf);
-    ll_append_field(l, f);
-    f.type = FIELD_STRING; f.s = strdup(nome);
-    ll_append_field(l, f);
-    f.type = FIELD_INT; f.i = idade; f.s = NULL;
-    ll_append_field(l, f);
-    f.type = FIELD_STRING; f.s = strdup(data);
-    ll_append_field(l, f);
+    struct Field field;
+    field.type = FIELD_INT; field.i = id; field.s = NULL;
+    ll_append_field(l, field);
+    field.type = FIELD_STRING; field.s = strdup(cpf);
+    ll_append_field(l, field);
+    field.type = FIELD_STRING; field.s = strdup(nome);
+    ll_append_field(l, field);
+    field.type = FIELD_INT; field.i = idade; field.s = NULL;
+    ll_append_field(l, field);
+    field.type = FIELD_STRING; field.s = strdup(data);
+    ll_append_field(l, field);
     return l;
 }
 
