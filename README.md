@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Pacientes Hospitalares - Estruturas de Dados
 
-Este projeto implementa um sistema de gerenciamento de pacientes hospitalares em C usando **vetor dinâmico** cujos elementos são **listas duplamente encadeadas** de campos heterogêneos. O sistema carrega o arquivo `bd_paciente.csv` em memória e oferece operações CRUD completas (Create, Read, Update, Delete) com persistência automática de dados.
+Este projeto implementa um sistema de gerenciamento de pacientes hospitalares em C usando **vetor dinâmico** cujos elementos são **listas duplamente encadeadas** de campos heterogêneos. O sistema carrega o arquivo `bd_paciente.csv` em memória e oferece operações CRUD completas (Create, Read, Update, Delete) com persistência de dados.
 
 ## Como Executar
 
@@ -13,11 +13,6 @@ cd Estrutura-de-Dados-parte-2
 ### 2. Compile e execute
 ```bash
 make
-```
-Ou alternativamente:
-```bash
-gcc -Wall -o Hospital_Patients_Management_System main.c linkedlist.c dinamic_vector.c
-./Hospital_Patients_Management_System
 ```
 
 ### 3. Menu interativo
@@ -38,18 +33,14 @@ Como gostaria de proceder?
 Q - Sair do sistema
 ```
 
-- **1 – Consultar**: submenu para buscar por Nome ou CPF (busca parcial)
+- **1 – Consultar**: submenu para buscar por Nome ou CPF
 - **2 – Atualizar**: permite modificar dados de pacientes existentes
 - **3 – Remover**: remove pacientes com reatribuição automática de IDs
-- **4 – Adicionar**: adiciona novos pacientes com formatação automática de CPF
+- **4 – Adicionar**: adiciona novos pacientes
 - **5 – Imprimir todos**: exibe todas as linhas carregadas
 - **6 – Limpar terminal**: limpa a tela
-- **Q – Sair**: salva automaticamente e encerra o programa
+- **Q – Sair**: salva e encerra o programa
 
-### 4. Limpar compilação
-```bash
-make clean
-```
 
 ## Principais TADs
 
@@ -112,10 +103,10 @@ struct Dinamic_Vector {
 ### Modelo de Dados
 Cada registro contém 5 campos fixos:
 - **Coluna 0**: ID (FIELD_INT) - gerado automaticamente
-- **Coluna 1**: CPF (FIELD_STRING) - formatado automaticamente para XXX.XXX.XXX-XX  
+- **Coluna 1**: CPF (FIELD_STRING) - formatado automaticamente para XXX.XXX.XXX-XX (desde que tenha a quantidade necessaria de caracteres)
 - **Coluna 2**: Nome (FIELD_STRING) - suporta espaços
 - **Coluna 3**: Idade (FIELD_INT)
-- **Coluna 4**: Data_Cadastro (FIELD_STRING) - formato YYYY-MM-DD
+- **Coluna 4**: Data_Cadastro (FIELD_STRING) - formatado automaticamente para YYYY-MM-DD (desde que tenha a quantidade necessaria de caracteres)
 
 ### Vetor de Ponteiros para Listas
 Escolhido para permitir que cada registro mantenha campos de tipos diferentes usando estrutura unificada em memória, com redimensionamento automático quando necessário.
@@ -126,18 +117,11 @@ Cada nó da lista armazena um `Field` com enum que indica se é inteiro, string 
 ### Splitting que Preserva Campos Vazios
 A função `split_csv_line()` gera sempre array de 5 strings, mesmo com campos vazios entre delimitadores. Garante que cada índice corresponde sempre à mesma coluna.
 
-### Interface Robusta
+### Features interessantes
 - **Entrada com `fgets()`**: Suporta nomes com espaços ao invés de `scanf()`
 - **Formatação Automática de CPF**: Aceita apenas dígitos ou já formatado
-- **Confirmações**: Operações críticas requerem confirmação do usuário
 - **Preview de Alterações**: Mostra dados antes de confirmar mudanças
-- **Limpeza de Buffer**: Tratamento adequado para evitar bugs de entrada
 
 ### Persistência e Gerenciamento de Memória
 - **Carregamento Automático**: CSV carregado na inicialização
 - **Salvamento Automático**: Dados persistidos ao sair com 'Q'
-- **Liberação Completa**: Toda memória alocada é liberada adequadamente
-- **Verificação de Erros**: `exit(1)` em falhas críticas de alocação
-
-### Abstração Modular
-O `main.c` apenas chama funções da interface, sem acessar detalhes internos das estruturas. Cada módulo tem responsabilidade específica e bem definida, facilitando manutenção e extensão.
